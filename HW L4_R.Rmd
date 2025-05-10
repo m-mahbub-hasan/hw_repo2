@@ -1,0 +1,263 @@
+---
+title: "HW L4 R"
+author: "Dr MM Hasan"
+date: "2025-05-10"
+output: html_document
+---
+
+## Homework Lecture 04 on R
+
+Q1. **(Factor vs Character) Explain the difference between a character vector and a factor in R. Why would mutation_status be a factor and not just a character vector?**
+
+Ans: Chartres vector is a vector that contains text strings, e.g. "Red", "Blue". While the factor is a categorical vector/variable in R representing data with a fixed set of values, known as levels.In factors we can sort data or arrange in different categories if needed.
+
+Q2. **(Factor Level Order) You observed the following bacterial species in gut microbiome samples:**
+
+```{r}
+species <- c("Lactobacillus", "Bacteroides", "Escherichia", "Bacteroides", "Lactobacillus")
+species_factor <- factor(species, levels = c("Bacteroides", "Escherichia", "Lactobacillus"))
+
+```
+
+What will levels(species_factor) return? Why?
+
+```{r}
+levels(species_factor)
+```
+
+*Why?* ANS:We are seeing the orders of the text strings as we defines using `levels` argument.
+
+Q3. **Given the factor:**
+
+```{r}
+
+disease_severity <- factor(c("Mild", "Severe", "Moderate"), levels = c("Mild", "Moderate", "Severe", "Critical"), ordered = TRUE)
+
+```
+
+What will be the result of `disease_severity[1] < disease_severity[2]` and why?
+
+```{r}
+disease_severity[1] < disease_severity[2]
+```
+
+\*we are seeing `TRUE` and the reason is we determined the order of `Severe` as higher order than the `Mild` one, so the the logical argument here is returned `TRUE`.
+
+Q4. **You computed:**
+
+```{r}
+prop <- prop.table(table(species_factor))
+
+```
+
+We can simply deterrmine the proportion of Escherichia by `prop["Escehricia"]`;
+
+```{r}
+prop["Escherichia"]
+
+```
+
+or by using the order we used in `levels`, which was 2
+
+```{r}
+prop[2]
+
+```
+
+**Is prop\$Escherichia Valid?** NO
+
+```{r}
+#prop$Escherichia
+
+```
+
+**Reason**: \$ operator is used to access elements of a list or data frame, but here `prop` is an atomic vector, we need to use [] for accessing its elements.
+
+Q5. **Interpret what this query returns:**
+
+The data frame is:
+
+```{r}
+# Create a data frame
+gene_df <- data.frame(
+  gene_id = c("BRCA1", "TP53", "MYC", "EGFR", "GAPDH"),
+  expression = c(8.2, 6.1, 9.5, 7.0, 10.0),
+  mutation = factor(c("Yes", "No", "Yes", "No", "No")),
+  pathway = c("DNA Repair", "Apoptosis", "Cell Cycle", "Signaling", "Metabolism")
+)
+
+gene_df
+
+```
+
+If we run tye provided code, we will get
+
+```{r}
+gene_df[gene_df$expression > 7 & gene_df$mutation == "No", ]
+```
+
+*Explanations:* this filtering can keep the data where the expression level is higher than 7 and also there is no mutation.
+
+Q6. **You have:**
+
+```{r}
+samples <- c("WT", "KO", "WT", "KO", "WT")
+expression <- c(5.2, 8.1, 4.3, 9.0, 5.7)
+```
+
+Dataframe:
+
+```{r}
+df <- data.frame(
+  samples = samples,
+  expression = expression
+)
+
+df
+
+```
+
+a.  *Create a factor `group_factor` for the samples.*
+
+```{r}
+group_factor <- factor(samples)
+group_factor
+
+```
+
+b.  *Use `tapply()` to calculate mean expression per group.*
+
+```{r}
+mean_expression <- tapply(expression, group_factor, mean)
+#print mean values
+mean_expression
+```
+
+c.  *Plot a `barplot` of average expression for each group.*
+
+```{r}
+barplot(mean_expression, 
+        main = "Average Expression by Sample Group", 
+        xlab = "Group", 
+        ylab = "Mean Expression", 
+        col = "lightblue")
+```
+
+Q7. **Use the gene_df example. Subset the data to find genes with:**
+
+*expression \> 8*
+
+*pathway is either “Cell Cycle” or “Signaling”*
+
+```{r}
+subset_gene_df <- gene_df[gene_df$expression > 8 & gene_df$pathway %in% c("Cell Cycle", "Signaling"), ]
+
+
+
+#print subset data
+
+subset_gene_df
+```
+
+
+
+Q8. **Create an ordered factor for the disease stages: `c("Stage I", "Stage III", "Stage II", "Stage IV", "Stage I")`. Then plot the number of patients per stage using `barplot()`. Confirm that `"Stage III" > "Stage I"` is logical in your factor.**
+
+
+```{r}
+can_stage <- c("Stage I", "Stage III", "Stage II", "Stage IV", "Stage I")
+can_stage_factor <- factor(can_stage, levels = c("Stage I", "Stage II", "Stage III", "Stage IV"), ordered = TRUE)
+#print can_stage_factor
+can_stage_factor
+
+can_stage_factor[5] < can_stage_factor [2]
+```
+```{r}
+freq <- table(can_stage_factor)
+
+freq
+
+
+
+```
+```{r}
+barplot(freq, 
+        main = "No. of Patients", 
+        xlab = "Stage", 
+        ylab = "Frequency", 
+        col = "orange")
+```
+Q9. **Suppose gene_data has a column type with values “Oncogene”, “Tumor Suppressor”, and “Housekeeping”.**
+
+*Subset all “Oncogene” rows where expression > 8.*
+```{r}
+gene_df$gene_data <- factor(c("Tumor Suppressor", "Tumor Suppressor", "Oncogene", "Oncogene", "Housekeeping"))
+
+
+gene_df
+```
+```{r}
+oncogene_subset <- gene_df[gene_df$gene_data == "Oncogene" & gene_df$expression > 8, ]
+
+#oncogene_subset
+oncogene_subset
+
+```
+*Change the reference level of the factor type to “Housekeeping”*
+Ans:
+```{r}
+levels(gene_df$gene_data)
+
+```
+As we are seeing "Housekeeping" at the beginning by default ordering I think that should be counted as Reference, If I am not get the context wrong! 
+
+
+
+Q10.**Simulate expression data for 3 tissues: We are going to use rnorm() function to generate random values from a normal distribution for this purpose. The example values inside the rnorm() function means we want:**
+
+* 30 values in total,
+
+* average or mean value = 8,
+
+* standard deviation of expression is 2.
+
+Provided code:
+```{r}
+set.seed(42) # For reproducibility
+gene_expr <- rnorm(30, mean = 8, sd = 2)
+tissue <- rep(c("brain", "liver", "kidney"), each = 10)
+tissue_factor <- factor(tissue, levels = c("liver", "brain", "kidney"))
+
+tissue_factor
+```
+```{r}
+expr_data <- data.frame(
+  tissue = tissue_factor,
+  expression = gene_expr
+)
+
+#expr_data
+head(expr_data)
+
+```
+
+
+```{r}
+boxplot(expression ~ tissue, 
+        data = expr_data,
+        main = "Gene Expression by Tissue",
+        xlab = "Tissue",
+        ylab = "Expression",
+        col = c("lightblue", "lightgreen", "lightpink"))
+
+```
+```{r}
+sd_expression <- tapply(expr_data$expression, expr_data$tissue, sd)
+sd_expression
+
+```
+```{r}
+max_sd_tissue <- names(sd_expression)[which.max(sd_expression)]
+max_sd_value <- sd_expression[which.max(sd_expression)]
+cat("The tissue with the highest sd is:", max_sd_tissue,", with SD =", round(max_sd_value, 2), "\n")
+```
